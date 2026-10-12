@@ -1,0 +1,25 @@
+name: wireless-info
+base: core26
+version: '0.1'
+summary: Gathers essential wireless information needed to troubleshoot wireless issues
+description: |
+  This script gathers the info necessary for troubleshooting a wireless
+  connection and saves them in a text file.
+
+grade: devel
+confinement: devmode
+
+apps:
+  wireless-info:
+    command: bin/wireless-info
+    plugs:
+      - network
+      - network-observe
+
+parts:
+  wireless-script:
+    plugin: nil
+    source: .
+    override-build: |
+      wget https://raw.githubusercontent.com/UbuntuForums/wireless-info/raw/master/wireless-info
+      install -D -m 755 wireless-info ${SNAPCRAFT_PART_INSTALL}/bin/wireless-info
