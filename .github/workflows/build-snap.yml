@@ -11,9 +11,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: wireless-info
-        run: bin/wireless-info   
-
       - name: Build Snap Package
         uses: snapcore/action-build@v1
         id: snapcraft
