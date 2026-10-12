@@ -1,0 +1,25 @@
+name: Build Wireless Snap
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: wireless-info
+        run: bin/wireless-info   
+
+      - name: Build Snap Package
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Upload Snap Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-snap
+          path: ${{ steps.snapcraft.outputs.snap }}
