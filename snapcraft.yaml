@@ -20,6 +20,8 @@ parts:
   wireless-script:
     plugin: nil
     source: .
+    build-packages:
+      - wget
     override-build: |
       wget https://raw.githubusercontent.com/UbuntuForums/wireless-info/raw/master/wireless-info
       install -D -m 755 wireless-info ${SNAPCRAFT_PART_INSTALL}/bin/wireless-info
