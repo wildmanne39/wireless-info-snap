@@ -25,3 +25,11 @@ parts:
     override-build: |
       wget https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
       install -D -m 755 wireless-info ${SNAPCRAFT_PART_INSTALL}/bin/wireless-info
+
+steps:
+  - name: Run wireless-info   
+    run: bin/wireless-info
+
+  - name: Build Snap Package       
+    uses: snapcore/action-build@v1
+    id: snapcraft
