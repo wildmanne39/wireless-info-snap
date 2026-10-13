@@ -1,4 +1,4 @@
-name: Build Wireless Snap
+name: build wireless-info-snap
 
 on:
   push:
