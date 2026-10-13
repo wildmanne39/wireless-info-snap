@@ -1,5 +1,5 @@
 name: wireless-info
-base: core26
+base: core24
 version: '0.1'
 summary: Gathers essential wireless information needed to troubleshoot wireless issues
 description: |
