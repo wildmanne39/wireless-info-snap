@@ -28,10 +28,6 @@ layout:
     symlink: $SNAP/sbin/ifconfig
   /sbin/route:
     symlink: $SNAP/sbin/route
-  /etc/os-release:
-    symlink: /var/lib/snapd/hostfs/etc/os-release
-  /etc/lsb-release:
-    symlink: /var/lib/snapd/hostfs/etc/lsb-release
 
 parts:
   wireless-script:
@@ -51,4 +47,9 @@ parts:
       - dkms
     override-build: |
       wget https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
+      
+      # Tell the script to read the host's release files instead of the base snap's files
+      sed -i 's|/etc/os-release|/var/lib/snapd/hostfs/etc/os-release|g' wireless-info
+      sed -i 's|/etc/lsb-release|/var/lib/snapd/hostfs/etc/lsb-release|g' wireless-info
+      
       install -D -m 755 wireless-info ${CRAFT_PART_INSTALL}/bin/wireless-info
