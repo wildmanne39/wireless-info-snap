@@ -15,6 +15,8 @@ apps:
     plugs:
       - network
       - network-observe
+      - system-observe
+      - hardware-observe
 
 parts:
   wireless-script:
@@ -22,7 +24,16 @@ parts:
     source: .
     build-packages:
       - wget
+    stage-packages:
+      - pciutils        # Provides lspci
+      - usbutils        # Provides lsusb
+      - iw              # Provides iw
+      - wireless-tools  # Provides iwconfig, iwlist
+      - net-tools       # Provides ifconfig, route
+      - lsb-release     # Provides lsb_release
+      - mokutil         # Provides mokutil
+      - pcmciautils     # Provides pccardctl
+      - dkms            # Provides dkms
     override-build: |
       wget https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
       install -D -m 755 wireless-info ${CRAFT_PART_INSTALL}/bin/wireless-info
-
