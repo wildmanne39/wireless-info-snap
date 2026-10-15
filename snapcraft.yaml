@@ -17,6 +17,17 @@ apps:
       - network-observe
       - system-observe
       - hardware-observe
+      - removable-media
+
+layout:
+  /usr/sbin/lspci:
+    symlink: $SNAP/usr/bin/lspci
+  /usr/sbin/lsusb:
+    symlink: $SNAP/usr/bin/lsusb
+  /sbin/ifconfig:
+    symlink: $SNAP/sbin/ifconfig
+  /sbin/route:
+    symlink: $SNAP/sbin/route
 
 parts:
   wireless-script:
@@ -25,15 +36,15 @@ parts:
     build-packages:
       - wget
     stage-packages:
-      - pciutils        # Provides lspci
-      - usbutils        # Provides lsusb
-      - iw              # Provides iw
-      - wireless-tools  # Provides iwconfig, iwlist
-      - net-tools       # Provides ifconfig, route
-      - lsb-release     # Provides lsb_release
-      - mokutil         # Provides mokutil
-      - pcmciautils     # Provides pccardctl
-      - dkms            # Provides dkms
+      - pciutils
+      - usbutils
+      - iw
+      - wireless-tools
+      - net-tools
+      - lsb-release
+      - mokutil
+      - pcmciautils
+      - dkms
     override-build: |
       wget https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
       install -D -m 755 wireless-info ${CRAFT_PART_INSTALL}/bin/wireless-info
