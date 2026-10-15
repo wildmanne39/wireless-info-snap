@@ -28,6 +28,10 @@ layout:
     symlink: $SNAP/sbin/ifconfig
   /sbin/route:
     symlink: $SNAP/sbin/route
+  /etc/os-release:
+    symlink: /var/lib/snapd/hostfs/etc/os-release
+  /etc/lsb-release:
+    symlink: /var/lib/snapd/hostfs/etc/lsb-release
 
 parts:
   wireless-script:
