@@ -19,7 +19,7 @@ apps:
       - network
       - network-observe
       - hardware-observe
-      - kernel-modules-observe
+      - kernel-module-observe
       - system-observe
       - mount-observe
       - process-control
@@ -60,7 +60,9 @@ parts:
       - rfkill
       - wireless-tools
       - mokutil
+      
     override-build: |
+    
       # Install wget to fetch the script from upstream
       apt update
       apt install -y wget
