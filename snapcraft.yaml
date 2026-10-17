@@ -33,10 +33,11 @@ parts:
       - rfkill
       - wireless-tools
       - mokutil
+      - sysvinit-utils
     override-build: |
-      # Install wget and sed for patching
+      # Install wget to fetch the script directly from upstream
       apt update
-      apt install -y wget sed
+      apt install -y wget
       
       # Create necessary directories inside the snap package
       mkdir -p ${CRAFT_PART_INSTALL}/bin
@@ -45,9 +46,6 @@ parts:
       # Download the official wireless-info script
       wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://github.com/UbuntuForums/wireless-info/raw/master/wireless-info
       chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
-
-      # Patch upstream script bugs for modern Bash compatibility
-      sed -i 's/printf --/printf "%s" /g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Create a wrapper script that forces the PATH to include all snap sbin/bin directories
       cat << 'EOF' > ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
