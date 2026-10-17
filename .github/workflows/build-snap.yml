@@ -1,22 +1,62 @@
-name: build wireless-info-snap
+name: wireless-info
+base: core24
+version: '2.0'
+summary: Comprehensive wireless diagnostic script for Ubuntu systems
+description: |
+  A modernized diagnostic utility designed to gather detailed hardware, driver, 
+  network manager, and configuration information for wireless troubleshooting.
 
-on:
-  push:
-  workflow_dispatch:
+grade: stable
+confinement: strict
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+apps:
+  wireless-info:
+    command: bin/wireless-info
+    plugs:
+      - network
+      - network-observe
+      - hardware-observe
+      - kernel-modules-observe
+      - system-observe
+      - mount-observe
+      - process-control
+      - system-host-configs
+      - network-manager-configs
 
-      - name: Build Snap Package
-        uses: snapcore/action-build@v1
-        id: snapcraft
+plugs:
+  system-host-configs:
+    interface: system-files
+    read:
+      - /etc/netplan
+      - /etc/network
+      - /etc/resolv.conf
+      - /etc/timezone
+      - /etc/rc.local
+      - /var/lib/dkms
 
-      - name: Upload Snap Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: package-snap
-          path: ${{ steps.snapcraft.outputs.snap }}
+  network-manager-configs:
+    interface: system-files
+    read:
+      - /etc/NetworkManager
+      - /var/lib/NetworkManager
+
+parts:
+  wireless-info:
+    plugin: dump
+    source: .
+    stage-packages:
+      - bash
+      - coreutils
+      - pciutils
+      - usbutils
+      - iw
+      - iproute2
+      - net-tools
+      - network-manager
+      - dkms
+      - kmod
+      - grep
+      - sed
+      - gawk
+      - pastebinit
+      - procps
