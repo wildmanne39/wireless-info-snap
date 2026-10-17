@@ -1,55 +1,65 @@
 name: wireless-info
 base: core26
-version: '0.1'
-summary: Gathers essential wireless information needed to troubleshoot wireless issues
+version: '2.0'
+summary: Comprehensive wireless diagnostic script for Ubuntu systems
 description: |
-  This script gathers the info necessary for troubleshooting a wireless
-  connection and saves them in a text file.
+  A modernized diagnostic utility designed to gather detailed hardware, driver, 
+  network manager, and configuration information for wireless troubleshooting.
 
-grade: devel
-confinement: devmode
+grade: stable
+confinement: strict
+
+platforms:
+  amd64:
 
 apps:
   wireless-info:
     command: bin/wireless-info
-    environment:
-      PATH: $SNAP/usr/sbin:$SNAP/sbin:$SNAP/usr/bin:$SNAP/bin:$PATH
     plugs:
       - network
       - network-observe
-      - system-observe
       - hardware-observe
-      - removable-media
+      - kernel-modules-observe
+      - system-observe
+      - mount-observe
+      - process-control
+      - system-host-configs
+      - network-manager-configs
+
+plugs:
+  system-host-configs:
+    interface: system-files
+    read:
+      - /etc/netplan
+      - /etc/network
+      - /etc/resolv.conf
+      - /etc/timezone
+      - /etc/rc.local
+      - /var/lib/dkms
+
+  network-manager-configs:
+    interface: system-files
+    read:
+      - /etc/NetworkManager
+      - /var/lib/NetworkManager
 
 parts:
-  wireless-script:
-    plugin: nil
+  wireless-info:
+    plugin: dump
     source: .
-    build-packages:
-      - curl
     stage-packages:
+      - bash
+      - coreutils
       - pciutils
       - usbutils
       - iw
-      - wireless-tools
+      - iproute2
       - net-tools
-      - lsb-release
-      - mokutil
       - network-manager
       - dkms
-    override-build: |
-      set -e
-      
-      # Download the official script securely
-      curl -L -o wireless-info https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
-      
-      # Patch release files only if they exist in the script to prevent build crashes
-      if grep -q "/etc/os-release" wireless-info; then
-        sed -i 's|/etc/os-release|/var/lib/snapd/hostfs/etc/os-release|g' wireless-info
-      fi
-      if grep -q "/etc/lsb-release" wireless-info; then
-        sed -i 's|/etc/lsb-release|/var/lib/snapd/hostfs/etc/lsb-release|g' wireless-info
-      fi
-      
-      # Install into the final snap package
-      install -D -m 755 wireless-info ${CRAFT_PART_INSTALL}/bin/wireless-info
+      - kmod
+      - grep
+      - sed
+      - gawk
+      - pastebinit
+      - procps
