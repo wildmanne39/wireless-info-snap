@@ -13,8 +13,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up LXD environment
-        uses: canonical/setup-lxd@v5
+      - name: Install and Initialize LXD Natively
+        run: |
+          sudo snap install lxd
+          sudo lxd waitready
+          sudo lxd init --auto
 
       - name: Install Snapcraft
         run: |
