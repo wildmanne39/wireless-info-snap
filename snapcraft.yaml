@@ -12,6 +12,11 @@ confinement: strict
 platforms:
   amd64:
 
+package-repositories:
+  - type: apt
+    components: [main, restricted, universe, multiverse]
+    suites: [resolute]
+
 apps:
   wireless-info:
     command: bin/wireless-info
