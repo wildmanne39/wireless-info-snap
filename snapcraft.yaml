@@ -12,6 +12,8 @@ confinement: devmode
 apps:
   wireless-info:
     command: bin/wireless-info
+    environment:
+      PATH: $SNAP/usr/sbin:$SNAP/sbin:$SNAP/usr/bin:$SNAP/bin:$PATH
     plugs:
       - network
       - network-observe
@@ -19,22 +21,12 @@ apps:
       - hardware-observe
       - removable-media
 
-layout:
-  /usr/sbin/lspci:
-    symlink: $SNAP/usr/bin/lspci
-  /usr/sbin/lsusb:
-    symlink: $SNAP/usr/bin/lsusb
-  /sbin/ifconfig:
-    symlink: $SNAP/sbin/ifconfig
-  /sbin/route:
-    symlink: $SNAP/sbin/route
-
 parts:
   wireless-script:
     plugin: nil
     source: .
     build-packages:
-      - wget
+      - curl
     stage-packages:
       - pciutils
       - usbutils
@@ -43,7 +35,7 @@ parts:
       - net-tools
       - lsb-release
       - mokutil
-      - pcmciautils
+      - network-manager
       - dkms
     override-build: |
       set -e
