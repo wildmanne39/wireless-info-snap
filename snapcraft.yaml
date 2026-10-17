@@ -7,7 +7,7 @@ description: |
   network manager, and configuration information for wireless troubleshooting.
 
 grade: stable
-confinement: strict
+confinement: classic
 
 platforms:
   amd64:
@@ -15,33 +15,6 @@ platforms:
 apps:
   wireless-info:
     command: bin/wireless-info-wrapper
-    plugs:
-      - network
-      - network-observe
-      - hardware-observe
-      - kernel-module-observe
-      - system-observe
-      - mount-observe
-      - process-control
-      - system-host-configs
-      - network-manager-configs
-
-plugs:
-  system-host-configs:
-    interface: system-files
-    read:
-      - /etc/netplan
-      - /etc/network
-      - /etc/resolv.conf
-      - /etc/timezone
-      - /etc/rc.local
-      - /var/lib/dkms
-
-  network-manager-configs:
-    interface: system-files
-    read:
-      - /etc/NetworkManager
-      - /var/lib/NetworkManager
 
 parts:
   wireless-info:
@@ -61,9 +34,9 @@ parts:
       - wireless-tools
       - mokutil
     override-build: |
-      # Install wget to fetch the script from upstream
+      # Install wget and sed for patching
       apt update
-      apt install -y wget
+      apt install -y wget sed
       
       # Create necessary directories inside the snap package
       mkdir -p ${CRAFT_PART_INSTALL}/bin
@@ -72,6 +45,9 @@ parts:
       # Download the official wireless-info script
       wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://github.com/UbuntuForums/wireless-info/raw/master/wireless-info
       chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
+
+      # Patch upstream script bugs for modern Bash compatibility
+      sed -i 's/printf --/printf "%s" /g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Create a wrapper script that forces the PATH to include all snap sbin/bin directories
       cat << 'EOF' > ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
