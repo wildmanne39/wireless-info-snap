@@ -48,8 +48,6 @@ parts:
     plugin: dump
     source: .
     stage-packages:
-      - bash
-      - coreutils
       - pciutils
       - usbutils
       - iw
@@ -58,8 +56,5 @@ parts:
       - network-manager
       - dkms
       - kmod
-      - grep
-      - sed
-      - gawk
       - pastebinit
       - procps
