@@ -8,7 +8,7 @@ name: Build Snap
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,9 +17,9 @@ jobs:
         run: |
           sudo snap install snapcraft --classic
 
-      - name: Build snap with Snapcraft
+      - name: Pack snap with Snapcraft
         run: |
-          sudo snapcraft --destructive-mode
+          sudo snapcraft pack --destructive-mode
 
       - name: Upload generated snap
         uses: actions/upload-artifact@v4
