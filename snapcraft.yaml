@@ -47,14 +47,16 @@ parts:
   wireless-info:
     plugin: dump
     source: .
-    stage-packages:
-      - pciutils
-      - usbutils
-      - iw
-      - iproute2
-      - net-tools
-      - network-manager
-      - dkms
-      - kmod
-      - pastebinit
-      - procps
+    override-build: |
+      # Install dependencies including wget
+      apt update
+      apt install -y wget iw pciutils usbutils iproute2 net-tools network-manager dkms kmod pastebinit procps
+      
+      # Create the bin directory in the package structure
+      mkdir -p ${CRAFT_PART_INSTALL}/bin
+      
+      # Download the official wireless-info script directly from the Ubuntu Forums GitHub source
+      wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://github.com/UbuntuForums/wireless-info/raw/master/wireless-info
+      
+      # Make the downloaded script executable
+      chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
