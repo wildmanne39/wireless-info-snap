@@ -1,5 +1,5 @@
 name: wireless-info
-base: core24
+base: core26
 version: '2.0'
 summary: Comprehensive wireless diagnostic script for Ubuntu systems
 description: |
@@ -47,14 +47,10 @@ parts:
   wireless-info:
     plugin: dump
     source: .
-    stage-packages:
-      - pciutils
-      - usbutils
-      - iw
-      - iproute2
-      - net-tools
-      - network-manager
-      - dkms
-      - kmod
-      - pastebinit
-      - procps
+    override-build: |
+      # Installs all tools cleanly using the host Ubuntu 26.04 apt repositories
+      apt-get update
+      apt-get install -y iw pciutils usbutils iproute2 net-tools network-manager dkms kmod pastebinit procps
+      
+      # Copies your repository script files into the snap package
+      craftctl default
