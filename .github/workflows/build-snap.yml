@@ -8,18 +8,21 @@ name: Build Snap
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up LXD environment
+        uses: canonical/setup-lxd@v5
 
       - name: Install Snapcraft
         run: |
           sudo snap install snapcraft --classic
 
-      - name: Pack snap with Snapcraft
+      - name: Pack snap using LXD container
         run: |
-          sudo snapcraft pack --destructive-mode
+          sudo snapcraft pack --use-lxd
 
       - name: Upload generated snap
         uses: actions/upload-artifact@v4
