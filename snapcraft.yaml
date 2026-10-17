@@ -46,10 +46,18 @@ parts:
       - pcmciautils
       - dkms
     override-build: |
-      wget https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
+      set -e
       
-      # Tell the script to read the host's release files instead of the base snap's files
-      sed -i 's|/etc/os-release|/var/lib/snapd/hostfs/etc/os-release|g' wireless-info
-      sed -i 's|/etc/lsb-release|/var/lib/snapd/hostfs/etc/lsb-release|g' wireless-info
+      # Download the official script securely
+      curl -L -o wireless-info https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
       
+      # Patch release files only if they exist in the script to prevent build crashes
+      if grep -q "/etc/os-release" wireless-info; then
+        sed -i 's|/etc/os-release|/var/lib/snapd/hostfs/etc/os-release|g' wireless-info
+      fi
+      if grep -q "/etc/lsb-release" wireless-info; then
+        sed -i 's|/etc/lsb-release|/var/lib/snapd/hostfs/etc/lsb-release|g' wireless-info
+      fi
+      
+      # Install into the final snap package
       install -D -m 755 wireless-info ${CRAFT_PART_INSTALL}/bin/wireless-info
