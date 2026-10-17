@@ -14,7 +14,7 @@ platforms:
 
 apps:
   wireless-info:
-    command: bin/wireless-info
+    command: bin/wireless-info-wrapper
     plugs:
       - network
       - network-observe
@@ -60,9 +60,7 @@ parts:
       - rfkill
       - wireless-tools
       - mokutil
-      
     override-build: |
-    
       # Install wget to fetch the script from upstream
       apt update
       apt install -y wget
@@ -71,11 +69,17 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/bin
       mkdir -p ${CRAFT_PART_INSTALL}/usr/bin
       
-      # Download the official wireless-info script directly during the build
+      # Download the official wireless-info script
       wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://github.com/UbuntuForums/wireless-info/raw/master/wireless-info
-      
-      # Make the script executable
       chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
+
+      # Create a wrapper script that forces the PATH to include all snap sbin/bin directories
+      cat << 'EOF' > ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
+      #!/bin/sh
+      export PATH="$SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH"
+      exec "$SNAP/bin/wireless-info" "$@"
+      EOF
+      chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
 
       # Create a lightweight shell-based lsb_release replacement
       cat << 'EOF' > ${CRAFT_PART_INSTALL}/usr/bin/lsb_release
