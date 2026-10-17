@@ -57,8 +57,11 @@ parts:
       - kmod
       - pastebinit
       - procps
+      - rfkill
+      - wireless-tools
+      - lsb-release
     override-build: |
-      # Install wget to fetch the script
+      # Install wget to fetch the script from upstream
       apt update
       apt install -y wget
       
