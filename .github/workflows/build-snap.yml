@@ -1,8 +1,6 @@
-YAML
-
 name: Build Snap
 
-on:
+'on':
   push:
     branches: [ main, master ]
   pull_request:
