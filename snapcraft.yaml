@@ -48,9 +48,64 @@ parts:
     plugin: dump
     source: .
     override-build: |
-      # Installs all tools cleanly using the host Ubuntu 26.04 apt repositories
-      apt-get update
-      apt-get install -y iw pciutils usbutils iproute2 net-tools network-manager dkms kmod pastebinit procps
+      # Uses the modern apt frontend to install diagnostic tools
+      apt update
+      apt install -y iw pciutils usbutils iproute2 net-tools network-manager dkms kmod pastebinit procps
+      
+      # Copies your repository script files into the snap package
+      craftctl defaultname: wireless-info
+base: core26
+version: '2.0'
+summary: Comprehensive wireless diagnostic script for Ubuntu systems
+description: |
+  A modernized diagnostic utility designed to gather detailed hardware, driver, 
+  network manager, and configuration information for wireless troubleshooting.
+
+grade: stable
+confinement: strict
+
+platforms:
+  amd64:
+
+apps:
+  wireless-info:
+    command: bin/wireless-info
+    plugs:
+      - network
+      - network-observe
+      - hardware-observe
+      - kernel-modules-observe
+      - system-observe
+      - mount-observe
+      - process-control
+      - system-host-configs
+      - network-manager-configs
+
+plugs:
+  system-host-configs:
+    interface: system-files
+    read:
+      - /etc/netplan
+      - /etc/network
+      - /etc/resolv.conf
+      - /etc/timezone
+      - /etc/rc.local
+      - /var/lib/dkms
+
+  network-manager-configs:
+    interface: system-files
+    read:
+      - /etc/NetworkManager
+      - /var/lib/NetworkManager
+
+parts:
+  wireless-info:
+    plugin: dump
+    source: .
+    override-build: |
+      # Uses the modern apt frontend to install diagnostic tools
+      apt update
+      apt install -y iw pciutils usbutils iproute2 net-tools network-manager dkms kmod pastebinit procps
       
       # Copies your repository script files into the snap package
       craftctl default
