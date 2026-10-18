@@ -1,29 +1,25 @@
-name: Build Snap
+name: Build Snap Package
 
-'on':
+on:
   push:
-    branches: [ main, master ]
+    branches: [ "master", "main" ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ "master", "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
-    # Explicitly pinned to 24.04 to match core24 and prevent host mismatches
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v7
 
-      - name: Install Snapcraft
-        run: |
-          sudo snap install snapcraft --classic
+      - name: Build Snap
+        uses: snapcore/action-build@v1
+        id: build-snap
 
-      - name: Pack snap with Snapcraft
-        run: |
-          sudo snapcraft pack --destructive-mode
-
-      - name: Upload generated snap
-        uses: actions/upload-artifact@v4
+      - name: Upload Snap Artifact
+        uses: actions/upload-artifact@v7
         with:
           name: wireless-info-snap
-          path: '*.snap'
+          path: ${{ steps.build-snap.outputs.snap }}
