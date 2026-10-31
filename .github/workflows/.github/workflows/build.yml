@@ -1,0 +1,24 @@
+name: Build Snap Package
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Snap
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Save Snap Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wireless-info-snap
+          path: ${{ steps.snapcraft.outputs.snap }}
