@@ -1,4 +1,4 @@
-name: Build and Publish Snap
+name: Build Snap
 
 on:
   push:
@@ -16,10 +16,8 @@ jobs:
         uses: snapcore/action-build@v1
         id: build
 
-      - name: Publish to Snap Store
-        uses: snapcore/action-publish@v1
-        env:
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+      - name: Upload snap artifact for testing
+        uses: actions/upload-artifact@v4
         with:
-          snap: ${{ steps.build.outputs.snap }}
-          release: candidate
+          name: wireless-info-snap
+          path: ${{ steps.build.outputs.snap }}
