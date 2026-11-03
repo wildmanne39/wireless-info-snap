@@ -36,16 +36,21 @@ parts:
       - mokutil
       - sysvinit-utils
     override-build: |
-      # Install wget to fetch the script directly from upstream
       apt update
-      apt install -y wget
-      
+      apt install -y wget coreutils
+
       # Create necessary directories inside the snap package
       mkdir -p ${CRAFT_PART_INSTALL}/bin
       mkdir -p ${CRAFT_PART_INSTALL}/usr/bin
-      
-      # Download the official wireless-info script
-      wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://github.com/UbuntuForums/wireless-info/raw/master/wireless-info
+
+      # Use local repository script if present for testing, otherwise download from upstream
+      if [ -f "${CRAFT_PROJECT_DIR}/wireless-info" ]; then
+        echo "Using local repository wireless-info script..."
+        cp "${CRAFT_PROJECT_DIR}/wireless-info" ${CRAFT_PART_INSTALL}/bin/wireless-info
+      else
+        echo "Downloading from upstream UbuntuForums..."
+        wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://github.com/UbuntuForums/wireless-info/raw/master/wireless-info
+      fi
       chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Create a wrapper script that forces the PATH to include all snap sbin/bin directories
