@@ -7,8 +7,7 @@ description: |
   network manager, and configuration information for wireless troubleshooting.
 
 grade: stable
-confinement: classic
-license: GPL-3.0-or-later
+confinement: strict
 
 platforms:
   amd64:
@@ -16,6 +15,12 @@ platforms:
 apps:
   wireless-info:
     command: bin/wireless-info-wrapper
+    plugs:
+      - network
+      - network-control
+      - hardware-observe
+      - system-observe
+      - network-manager
 
 parts:
   wireless-info:
@@ -43,14 +48,9 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/bin
       mkdir -p ${CRAFT_PART_INSTALL}/usr/bin
 
-      # Use local repository script if present for testing, otherwise download from upstream
-      if [ -f "${CRAFT_PROJECT_DIR}/wireless-info" ]; then
-        echo "Using local repository wireless-info script..."
-        cp "${CRAFT_PROJECT_DIR}/wireless-info" ${CRAFT_PART_INSTALL}/bin/wireless-info
-      else
-        echo "Downloading from upstream UbuntuForums..."
-        wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://github.com/UbuntuForums/wireless-info/raw/master/wireless-info
-      fi
+      # Always pull directly from the official upstream UbuntuForums GitHub repository
+      echo "Downloading from upstream UbuntuForums..."
+      wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
       chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Create a wrapper script that forces the PATH to include all snap sbin/bin directories
