@@ -21,6 +21,18 @@ plugs:
     interface: system-files
     read:
       - /etc/NetworkManager
+  kernel-modules-cfg:
+    interface: system-files
+    read:
+      - /usr/lib/modules
+  udev-rules-cfg:
+    interface: system-files
+    read:
+      - /etc/udev/rules.d
+  system-sleep-cfg:
+    interface: system-files
+    read:
+      - /usr/lib/systemd/system-sleep
 
 apps:
   wireless-info:
@@ -35,6 +47,9 @@ apps:
       - kernel-module-observe
       - netplan-cfg
       - networkmanager-cfg
+      - kernel-modules-cfg
+      - udev-rules-cfg
+      - system-sleep-cfg
 
 parts:
   wireless-info:
@@ -67,8 +82,9 @@ parts:
       wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
       chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
 
-      # Patch out 'sudo' calls since snap commands execute with interface permissions
-      sed -i 's/\bsudo\s\+/ /g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      # Aggressively patch out both absolute /usr/bin/sudo and raw sudo commands
+      sed -i 's|/usr/bin/sudo| |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's|\bsudo\b| |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Create a wrapper script that forces the PATH and passes all arguments ($@)
       cat << 'EOF' > ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
