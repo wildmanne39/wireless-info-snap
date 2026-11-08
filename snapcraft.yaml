@@ -12,6 +12,16 @@ confinement: strict
 platforms:
   amd64:
 
+plugs:
+  netplan-cfg:
+    interface: system-files
+    read:
+      - /etc/netplan
+  networkmanager-cfg:
+    interface: system-files
+    read:
+      - /etc/NetworkManager
+
 apps:
   wireless-info:
     command: bin/wireless-info-wrapper
@@ -23,10 +33,8 @@ apps:
       - network-manager
       - home
       - kernel-module-observe
-      - system-files:
-          read:
-            - /etc/netplan
-            - /etc/NetworkManager
+      - netplan-cfg
+      - networkmanager-cfg
 
 parts:
   wireless-info:
