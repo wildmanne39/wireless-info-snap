@@ -88,6 +88,11 @@ parts:
       sed -i 's|/usr/bin/sudo| |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
       sed -i 's|\bsudo\b| |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
+      # Bypass script's internal EUID and root checks so iw scan and admin blocks run
+      sed -i 's/\$EUID -ne 0/0 -ne 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/\$EUID -eq 0/1 -eq 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/id -u/echo 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+
       # Create a wrapper script that forces the PATH and passes all arguments ($@)
       cat << 'EOF' > ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
       #!/bin/sh
