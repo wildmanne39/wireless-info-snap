@@ -1,6 +1,6 @@
 name: wireless-info
 base: core24
-version: '2.7'
+version: '2.11'
 summary: Comprehensive wireless diagnostic script for Ubuntu systems
 description: |
   A modernized diagnostic utility designed to gather detailed hardware, driver, 
@@ -11,6 +11,14 @@ confinement: strict
 
 platforms:
   amd64:
+
+layout:
+  /etc/netplan:
+    bind: /var/lib/snapd/hostfs/etc/netplan
+  /etc/NetworkManager:
+    bind: /var/lib/snapd/hostfs/etc/NetworkManager
+  /etc/NetworkManager/system-connections:
+    bind: /var/lib/snapd/hostfs/etc/NetworkManager/system-connections
 
 plugs:
   netplan-cfg:
@@ -69,7 +77,6 @@ parts:
       - network-manager
       - dkms
       - kmod
-      - pastebinit
       - procps
       - rfkill
       - wireless-tools
@@ -99,9 +106,9 @@ parts:
       sed -i 's/\bcheck_root\b/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
       sed -i 's/\bget_admin\b/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
-      # Neutralize mokutil binary existence checks so it relies on our mock wrapper
-      sed -i 's/command -v mokutil/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/which mokutil/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      # Neutralize pastebinit upload prompt so the script finishes and saves the file locally
+      sed -i 's/\bpastebinit\b/echo "Pastebin skipped"/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/read.*choice/choice="n"/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Create a wrapper script that forces the PATH and passes all arguments ($@)
       cat << 'EOF' > ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
@@ -146,3 +153,10 @@ parts:
       exit 0
       EOF
       chmod +x ${CRAFT_PART_INSTALL}/usr/bin/mokutil
+
+      # Create a dmesg wrapper using journalctl to bypass sandbox permission limits
+      cat << 'EOF' > ${CRAFT_PART_INSTALL}/usr/bin/dmesg
+      #!/bin/sh
+      journalctl -k -b 0 2>/dev/null || echo "Kernel log buffer restricted"
+      EOF
+      chmod +x ${CRAFT_PART_INSTALL}/usr/bin/dmesg
