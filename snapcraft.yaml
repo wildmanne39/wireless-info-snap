@@ -1,6 +1,6 @@
 name: wireless-info
 base: core24
-version: '2.0'
+version: '2.1'
 summary: Comprehensive wireless diagnostic script for Ubuntu systems
 description: |
   A modernized diagnostic utility designed to gather detailed hardware, driver, 
@@ -84,14 +84,17 @@ parts:
       wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
       chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
 
-      # Aggressively patch out both absolute /usr/bin/sudo and raw sudo commands
+      # Aggressively patch out sudo commands and absolute paths
       sed -i 's|/usr/bin/sudo| |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's|\bsudo\b| |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/\bsudo\b/ |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
-      # Bypass script's internal EUID and root checks so iw scan and admin blocks run
+      # Bypass script's internal EUID, root checks, and admin privilege gates
       sed -i 's/\$EUID -ne 0/0 -ne 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
       sed -i 's/\$EUID -eq 0/1 -eq 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
       sed -i 's/id -u/echo 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/ask_sudo/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/check_root/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/get_admin/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Create a wrapper script that forces the PATH and passes all arguments ($@)
       cat << 'EOF' > ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
