@@ -25,6 +25,7 @@ plugs:
     interface: system-files
     read:
       - /usr/lib/modules
+      - /var/lib/snapd/hostfs/usr/lib/modules
   udev-rules-cfg:
     interface: system-files
     read:
@@ -43,6 +44,7 @@ apps:
       - hardware-observe
       - system-observe
       - network-manager
+      - log-observe
       - home
       - kernel-module-observe
       - netplan-cfg
