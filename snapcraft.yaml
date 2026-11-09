@@ -1,6 +1,6 @@
 name: wireless-info
 base: core24
-version: '2.12'
+version: '2.13'
 summary: Comprehensive wireless diagnostic script for Ubuntu systems
 description: |
   A modernized diagnostic utility designed to gather detailed hardware, driver, 
@@ -17,8 +17,6 @@ layout:
     bind: $SNAP/hostfs/etc/netplan
   /etc/NetworkManager:
     bind: $SNAP/hostfs/etc/NetworkManager
-  /etc/NetworkManager/system-connections:
-    bind: $SNAP/hostfs/etc/NetworkManager/system-connections
 
 plugs:
   netplan-cfg:
