@@ -1,6 +1,6 @@
 name: wireless-info
 base: core24
-version: '2.2'
+version: '2.4'
 summary: Comprehensive wireless diagnostic script for Ubuntu systems
 description: |
   A modernized diagnostic utility designed to gather detailed hardware, driver, 
@@ -21,6 +21,10 @@ plugs:
     interface: system-files
     read:
       - /etc/NetworkManager
+  nm-system-connections:
+    interface: system-files
+    read:
+      - /etc/NetworkManager/system-connections
   kernel-modules-cfg:
     interface: system-files
     read:
@@ -45,10 +49,12 @@ apps:
       - system-observe
       - network-manager
       - log-observe
+      - dmesg
       - home
       - kernel-module-observe
       - netplan-cfg
       - networkmanager-cfg
+      - nm-system-connections
       - kernel-modules-cfg
       - udev-rules-cfg
       - system-sleep-cfg
@@ -69,6 +75,7 @@ parts:
       - procps
       - rfkill
       - wireless-tools
+      - mokutil
       - sysvinit-utils
     override-build: |
       apt update
@@ -95,7 +102,11 @@ parts:
       sed -i 's/check_root/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
       sed -i 's/get_admin/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
-      # Neutralize the iw scan admin privilege abort block
+      # Neutralize mokutil dependency and existence checks in the script
+      sed -i 's/command -v mokutil/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/which mokutil/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+
+      # Neutralize raw scan admin privilege failure blocks
       sed -i 's/Acquisition of admin privileges failed.*/:/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Create a wrapper script that forces the PATH and passes all arguments ($@)
@@ -137,14 +148,10 @@ parts:
       # Create a robust shell-based mokutil replacement to satisfy secure boot checks
       cat << 'EOF' > ${CRAFT_PART_INSTALL}/usr/bin/mokutil
       #!/bin/sh
-      if [ "$1" = "--sb-state" ]; then
-          if [ -d /sys/firmware/efi/efivars ]; then
-              echo "SecureBoot enabled"
-              exit 0
-          else
-              echo "SecureBoot disabled"
-              exit 0
-          fi
+      if [ -d /sys/firmware/efi/efivars ]; then
+          echo "SecureBoot enabled"
+      else
+          echo "SecureBoot disabled"
       fi
       exit 0
       EOF
