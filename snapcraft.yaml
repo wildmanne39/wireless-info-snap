@@ -86,7 +86,7 @@ parts:
 
       # Aggressively patch out sudo commands and absolute paths
       sed -i 's|/usr/bin/sudo| |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/\bsudo\b/ |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
+      sed -i 's/\bsudo\b/ /g' ${CRAFT_PART_INSTALL}/bin/wireless-info
 
       # Bypass script's internal EUID, root checks, and admin privilege gates
       sed -i 's/\$EUID -ne 0/0 -ne 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
