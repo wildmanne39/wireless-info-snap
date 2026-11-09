@@ -1,6 +1,6 @@
 name: wireless-info
 base: core24
-version: '2.4'
+version: '2.5'
 summary: Comprehensive wireless diagnostic script for Ubuntu systems
 description: |
   A modernized diagnostic utility designed to gather detailed hardware, driver, 
@@ -49,7 +49,6 @@ apps:
       - system-observe
       - network-manager
       - log-observe
-      - dmesg
       - home
       - kernel-module-observe
       - netplan-cfg
