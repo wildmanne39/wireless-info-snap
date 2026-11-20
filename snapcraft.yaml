@@ -18,6 +18,10 @@ layout:
     bind-file: $SNAP/usr/share/misc/pci.ids
   /usr/share/misc/usb.ids:
     bind-file: $SNAP/usr/share/misc/usb.ids
+  /usr/share/iproute2:
+    bind: $SNAP/usr/share/iproute2
+  /etc/dkms:
+    bind: $SNAP/etc/dkms
 
 plugs:
   etc-netplan:
@@ -66,6 +70,7 @@ apps:
     plugs:
       - network
       - network-observe
+      - network-control
       - network-manager-observe
       - hardware-observe
       - system-observe
@@ -97,14 +102,25 @@ parts:
       - dkms
       - kmod
       - procps
+      - rfkill
       - util-linux
       - mokutil
       - curl
       - netcat-openbsd
       - systemd
     override-build: |
-      mkdir -p "${CRAFT_PART_INSTALL}/bin"
+      bash -n "${CRAFT_PART_SRC}/wireless-info"
+      mkdir -p "${CRAFT_PART_INSTALL}/bin" \
+               "${CRAFT_PART_INSTALL}/etc/dkms/framework.conf.d" \
+               "${CRAFT_PART_INSTALL}/usr/share/iproute2"
       install -m 0755 "${CRAFT_PART_SRC}/wireless-info" "${CRAFT_PART_INSTALL}/bin/wireless-info"
+
+      # Lightweight nproc shim prevents dkms from hitting core26 rust-coreutils exec denial
+      cat << 'EOF' > "${CRAFT_PART_INSTALL}/bin/nproc"
+      #!/bin/sh
+      echo 1
+      EOF
+      chmod 0755 "${CRAFT_PART_INSTALL}/bin/nproc"
 
       cat << EOF > "${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper"
       #!/bin/sh
