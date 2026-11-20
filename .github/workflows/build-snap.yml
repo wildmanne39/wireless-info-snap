@@ -21,3 +21,10 @@ jobs:
         with:
           name: wireless-info-snap
           path: ${{ steps.build.outputs.snap }}
+
+      - name: Publish snap to Snap Store
+        uses: snapcore/action-publish@v1
+        with:
+          store_login: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+          snap: ${{ steps.build.outputs.snap }}
+          release: edge
