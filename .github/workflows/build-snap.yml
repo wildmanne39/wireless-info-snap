@@ -1,4 +1,28 @@
-- name: Publish snap to Snap Store
+name: Build Snap
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build snap package
+        uses: snapcore/action-build@v1
+        id: build
+
+      - name: Upload snap artifact for testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: wireless-info-snap
+          path: ${{ steps.build.outputs.snap }}
+
+      - name: Publish snap to Snap Store
         uses: snapcore/action-publish@v1
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
