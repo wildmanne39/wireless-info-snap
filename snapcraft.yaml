@@ -1,9 +1,10 @@
 name: wireless-info
-base: core24
+base: core26
 version: '2.13'
-summary: Comprehensive wireless diagnostic script for Ubuntu systems
+license: GPL-3.0+
+summary: Comprehensive wireless diagnostic script for Linux systems
 description: |
-  A modernized diagnostic utility designed to gather detailed hardware, driver, 
+  A modernized diagnostic utility designed to gather detailed hardware, driver,
   network manager, and configuration information for wireless troubleshooting.
 
 grade: stable
@@ -13,148 +14,105 @@ platforms:
   amd64:
 
 layout:
-  /etc/netplan:
-    bind: $SNAP/hostfs/etc/netplan
-  /etc/NetworkManager:
-    bind: $SNAP/hostfs/etc/NetworkManager
+  /usr/share/misc/pci.ids:
+    bind-file: $SNAP/usr/share/misc/pci.ids
+  /usr/share/misc/usb.ids:
+    bind-file: $SNAP/usr/share/misc/usb.ids
 
 plugs:
-  netplan-cfg:
+  etc-netplan:
     interface: system-files
     read:
       - /etc/netplan
-  networkmanager-cfg:
+      - /run/netplan
+      - /var/lib/snapd/hostfs/lib/netplan
+      - /var/lib/snapd/hostfs/usr/lib/netplan
+  etc-network-cfg:
     interface: system-files
     read:
-      - /etc/NetworkManager
-  nm-system-connections:
-    interface: system-files
-    read:
-      - /etc/NetworkManager/system-connections
-  kernel-modules-cfg:
-    interface: system-files
-    read:
-      - /usr/lib/modules
-  udev-rules-cfg:
-    interface: system-files
-    read:
+      - /etc/network
+      - /etc/modprobe.d
+      - /etc/modprobe.conf
       - /etc/udev/rules.d
-  system-sleep-cfg:
+      - /etc/iwd
+      - /etc/sysconfig/network
+  etc-networkmanager:
     interface: system-files
     read:
-      - /usr/lib/systemd/system-sleep
+      - /etc/NetworkManager/NetworkManager.conf
+      - /etc/NetworkManager/conf.d
+      - /var/lib/snapd/hostfs/usr/lib/NetworkManager/conf.d
+      - /var/lib/snapd/hostfs/var/lib/NetworkManager/NetworkManager.state
+  hostfs-dkms:
+    interface: system-files
+    read:
+      - /var/lib/snapd/hostfs/var/lib/dkms
+      - /var/lib/snapd/hostfs/var/cache/akmods
+  hostfs-systemd-sleep:
+    interface: system-files
+    read:
+      - /etc/systemd/system-sleep
+      - /var/lib/snapd/hostfs/lib/systemd/system-sleep
+      - /var/lib/snapd/hostfs/usr/lib/systemd/system-sleep
+  sys-efi-secureboot:
+    interface: system-files
+    read:
+      - /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c
+      - /sys/firmware/efi/efivars/MokSBStateRT-605dab50-e046-4300-abb6-3dd810dd8b23
 
 apps:
   wireless-info:
     command: bin/wireless-info-wrapper
     plugs:
       - network
+      - network-observe
       - network-control
+      - network-manager-observe
       - hardware-observe
       - system-observe
-      - network-manager
       - log-observe
-      - home
       - kernel-module-observe
-      - netplan-cfg
-      - networkmanager-cfg
-      - nm-system-connections
-      - kernel-modules-cfg
-      - udev-rules-cfg
-      - system-sleep-cfg
+      - home
+      - etc-netplan
+      - etc-network-cfg
+      - etc-networkmanager
+      - hostfs-dkms
+      - hostfs-systemd-sleep
+      - sys-efi-secureboot
 
 parts:
   wireless-info:
     plugin: nil
+    source: https://github.com/UbuntuForums/wireless-info.git
+    source-type: git
+    source-branch: master
+    source-depth: 1
     stage-packages:
       - pciutils
+      - pci.ids
       - usbutils
+      - usb.ids
       - iw
       - iproute2
-      - net-tools
       - network-manager
       - dkms
       - kmod
       - procps
       - rfkill
-      - wireless-tools
-      - sysvinit-utils
+      - util-linux
+      - mokutil
+      - curl
+      - netcat-openbsd
+      - systemd
     override-build: |
-      apt update
-      apt install -y wget coreutils
+      mkdir -p "${CRAFT_PART_INSTALL}/bin"
+      install -m 0755 "${CRAFT_PART_SRC}/wireless-info" "${CRAFT_PART_INSTALL}/bin/wireless-info"
 
-      # Create necessary directories inside the snap package
-      mkdir -p ${CRAFT_PART_INSTALL}/bin
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/bin
-
-      # Pull directly from the official upstream UbuntuForums GitHub repository
-      echo "Downloading from upstream UbuntuForums..."
-      wget -O ${CRAFT_PART_INSTALL}/bin/wireless-info https://raw.githubusercontent.com/UbuntuForums/wireless-info/master/wireless-info
-      chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info
-
-      # Aggressively patch out sudo commands and absolute paths
-      sed -i 's|/usr/bin/sudo| |g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/\bsudo\b/ /g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-
-      # Bypass script's internal EUID, root checks, and admin privilege gates safely
-      sed -i 's/\$EUID -ne 0/0 -ne 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/\$EUID -eq 0/1 -eq 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/\bid -u\b/echo 0/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/\bask_sudo\b/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/\bcheck_root\b/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/\bget_admin\b/true/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-
-      # Neutralize pastebinit upload prompt so the script finishes and saves the file locally
-      sed -i 's/\bpastebinit\b/echo "Pastebin skipped"/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-      sed -i 's/read.*choice/choice="n"/g' ${CRAFT_PART_INSTALL}/bin/wireless-info
-
-      # Create a wrapper script that forces the PATH and passes all arguments ($@)
-      cat << 'EOF' > ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
+      cat << EOF > "${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper"
       #!/bin/sh
-      export PATH="$SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH"
-      exec "$SNAP/bin/wireless-info" "$@"
+      ARCH_LIB="\$SNAP/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}"
+      export PATH="\$SNAP/bin:\$SNAP/usr/sbin:\$SNAP/usr/bin:\$SNAP/sbin:\$PATH"
+      export LD_LIBRARY_PATH="\$ARCH_LIB/systemd:\$ARCH_LIB:\$SNAP/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}"
+      exec "\$SNAP/bin/wireless-info" "\$@"
       EOF
-      chmod +x ${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper
-
-      # Create a lightweight shell-based lsb_release replacement
-      cat << 'EOF' > ${CRAFT_PART_INSTALL}/usr/bin/lsb_release
-      #!/bin/sh
-      if [ -f /etc/os-release ]; then
-          . /etc/os-release
-      fi
-      if [ $# -eq 0 ]; then
-          echo "No LSB modules are available."
-          exit 0
-      fi
-      for arg in "$@"; do
-          case "$arg" in
-              -a|--all)
-                  echo "Distributor ID:\t${ID:-Ubuntu}"
-                  echo "Description:\t${PRETTY_NAME:-Ubuntu}"
-                  echo "Release:\t${VERSION_ID:-24.04}"
-                  echo "Codename:\t${VERSION_CODENAME:-noble}"
-                  exit 0
-                  ;;
-              -i|--id) echo "Distributor ID:\t${ID:-Ubuntu}";;
-              -d|--description) echo "Description:\t${PRETTY_NAME:-Ubuntu}";;
-              -r|--release) echo "Release:\t${VERSION_ID:-24.04}";;
-              -c|--codename) echo "Codename:\t${VERSION_CODENAME:-noble}";;
-          esac
-      done
-      EOF
-      chmod +x ${CRAFT_PART_INSTALL}/usr/bin/lsb_release
-
-      # Create a robust shell-based mokutil replacement
-      cat << 'EOF' > ${CRAFT_PART_INSTALL}/usr/bin/mokutil
-      #!/bin/sh
-      echo "SecureBoot enabled"
-      exit 0
-      EOF
-      chmod +x ${CRAFT_PART_INSTALL}/usr/bin/mokutil
-
-      # Create a dmesg wrapper using journalctl to bypass sandbox permission limits
-      cat << 'EOF' > ${CRAFT_PART_INSTALL}/usr/bin/dmesg
-      #!/bin/sh
-      journalctl -k -b 0 2>/dev/null || echo "Kernel log buffer restricted"
-      EOF
-      chmod +x ${CRAFT_PART_INSTALL}/usr/bin/dmesg
+      chmod 0755 "${CRAFT_PART_INSTALL}/bin/wireless-info-wrapper"
